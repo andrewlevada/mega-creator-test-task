@@ -3,19 +3,21 @@ import { html, LitElement, TemplateResult } from "lit";
 import { state } from "lit/decorators.js";
 import { componentStyles } from "~src/global";
 import * as Three from "three";
+import { DragControls } from "three/examples/jsm/controls/DragControls";
 
 export default (): void => defineComponent("space-scene", SpaceScene);
 export class SpaceScene extends LitElement {
 	private scene!: Three.Scene;
 	private camera!: Three.Camera;
 	private renderer!: Three.WebGLRenderer;
+	private controls!: DragControls;
 
 	@state() renderElement: HTMLElement | null = null;
 
 
-    render(): TemplateResult {
-        return html`${this.renderElement}`;
-    }
+	render(): TemplateResult {
+		return html`${this.renderElement}`;
+	}
 
 	constructor() {
 		super();
@@ -65,8 +67,16 @@ export class SpaceScene extends LitElement {
 		object.rotation.set(30, 90, 0);
 		this.scene.add(object);
 
-		this.renderer.render( this.scene, this.camera );
+		// Drag Controls
+		this.controls = new DragControls([object], this.camera, this.renderer.domElement);
+		this.controls.addEventListener("drag", () => this.renderCanvas());
+
+		this.renderCanvas();
 	}
 
-    static styles = [...componentStyles];
+	private renderCanvas(): void {
+		this.renderer.render(this.scene, this.camera);
+	}
+
+	static styles = [...componentStyles];
 }
