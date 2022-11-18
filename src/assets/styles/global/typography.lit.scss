@@ -1,0 +1,85 @@
+@use "../theming.lit";
+@use "./adaptivity.lit";
+
+h1 {
+	font-family: "Igra Sans", sans-serif;
+	font-style: normal;
+	font-weight: 400;
+	font-size: 64px;
+	line-height: 82px;
+
+	@include adaptivity.for-phone-only {
+		font-size: min(7vw, 64px);
+		line-height: min(9vw, 82px);
+	}
+}
+
+// h2 not used
+
+// h3 not used
+
+// Declaring this as mixin, because sometimes <a> is styles as h4,
+// but for accessibility reasons, link elements can not be <h4>
+@mixin h4 {
+	font-family: "Space Mono", monospace;
+	font-style: normal;
+	font-weight: 700;
+	font-size: 18px;
+	line-height: 28px;
+
+	&.accent-text {
+		font-family: "Igra Sans", sans-serif;
+	}
+}
+
+h4 { @include h4 }
+
+p, li {
+	font-family: "Atkinson Hyperlegible", sans-serif;
+	font-style: normal;
+	font-weight: 400;
+	font-size: 18px;
+	line-height: 26px;
+}
+
+li {
+	position: relative;
+	display: flex;
+	flex-direction: row;
+	margin-left: 12px;
+
+	&:before {
+		display: block;
+		content: "";
+		width: 4px;
+		height: 4px;
+		background: var(--dark-color);
+		border-radius: 2px;
+
+		position: absolute;
+		top: 10px;
+		left: -12px;
+	}
+
+	&:not(:last-child) {
+		margin-bottom: 6px;
+	}
+}
+
+a {
+	font-family: "Atkinson Hyperlegible", sans-serif;
+	font-style: italic;
+	font-weight: 400;
+	font-size: 18px;
+	line-height: 26px;
+	text-decoration-line: underline;
+
+	transition: color 100ms ease;
+
+	&:hover { color: var(--red-brand-color); }
+
+	&.as-header {
+		@include h4;
+		text-decoration-line: none;
+	}
+}
