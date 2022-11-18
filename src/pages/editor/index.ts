@@ -6,13 +6,17 @@ import { defineComponent } from "~utils/components";
 import { PlasmicComponent } from "lit-plasmic";
 import "lit-plasmic";
 
+import("~components/space-scene").then(f => f.default());
+
 export default (): void => defineComponent("app-page--editor", EditorPage);
 export class EditorPage extends LitElement {
 	render(): TemplateResult {
 		return html`
-			<plasmic-component name="EditorPage" projectId="8dw8cFpzDBK4cZFUBJNuWw" 
+			<plasmic-component name="EditorPage" projectId="8dw8cFpzDBK4cZFUBJNuWw"
 							   publicApiToken=${plasmicPublicApiToken}
 							   @loaded=${this.onPlasmicLoaded} ${ref(this.plasmicRef)}></plasmic-component>
+
+			<space-scene></space-scene>
 		`;
 	}
 

@@ -41,6 +41,7 @@ $RECYCLE.BIN/
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
+.idea/**/vcs.xml
 
 # Editor-based Rest Client
 .idea/httpRequests

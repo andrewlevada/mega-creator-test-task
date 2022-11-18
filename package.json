@@ -9,10 +9,12 @@
   },
   "dependencies": {
     "lit": "^2.4.0",
-    "lit-plasmic": "^0.3.1"
+    "lit-plasmic": "^0.3.1",
+    "three": "^0.146.0"
   },
   "devDependencies": {
     "@types/node": "^18.11.3",
+    "@types/three": "^0.146.0",
     "sass": "^1.55.0",
     "typescript": "^4.8.4",
     "typescript-plugin-css-modules": "^3.4.0",
