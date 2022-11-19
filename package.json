@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "lit": "^2.4.0",
-    "lit-plasmic": "^0.3.1",
+    "lit-plasmic": "^0.4.0",
     "three": "^0.146.0"
   },
   "devDependencies": {

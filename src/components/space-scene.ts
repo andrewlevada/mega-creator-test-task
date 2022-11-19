@@ -1,12 +1,14 @@
 import { defineComponent } from "~utils/components";
-import { css, html, LitElement, TemplateResult } from "lit";
+import { css, html, LitElement, PropertyValues, TemplateResult } from "lit";
 import { state } from "lit/decorators.js";
-import { componentStyles } from "~src/global";
+import { componentStyles, plasmicPublicApiToken } from "~src/global";
 import * as Three from "three";
 import { DragControls } from "three/examples/jsm/controls/DragControls";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { getObjectOnClick, getScreenCoordsAndSize } from "~utils/three";
 import { onRealClick } from "~utils/events";
 import { createRef, ref } from "lit/directives/ref.js";
+import { PlasmicComponent } from "lit-plasmic";
 
 export default (): void => defineComponent("space-scene", SpaceScene);
 export class SpaceScene extends LitElement {
@@ -14,22 +16,35 @@ export class SpaceScene extends LitElement {
 	private camera!: Three.Camera;
 	private renderer!: Three.WebGLRenderer;
 	private controls!: DragControls;
+	private orbitControls!: OrbitControls;
 
 	private object!: Three.Mesh;
 	private selectionOutline!: Three.LineSegments;
 
 	private objectSelected: boolean = false;
+	@state() objectRotating: boolean = false;
 
 	@state() renderElement: HTMLElement | null = null;
 
 	render(): TemplateResult {
 		return html`
 			${this.renderElement}
+			
 			<div ${ref(this.selectionFrame)} id="selection-frame"></div>
+			<plasmic-component name="ActionMenu" projectId="8dw8cFpzDBK4cZFUBJNuWw"
+							   publicApiToken=${plasmicPublicApiToken} id="action-menu"
+							   componentProps=${this.objectRotating ? JSON.stringify({ type: "context" }) : ""}
+							   @loaded=${this.bindActionMenu} ${ref(this.actionMenu)}></plasmic-component>
 		`;
 	}
 
+	protected updated(_changedProperties: PropertyValues) {
+		super.updated(_changedProperties);
+		if (this.actionMenu.value) this.actionMenu.value.refetchComponent();
+	}
+
 	private selectionFrame = createRef<HTMLElement>();
+	private actionMenu = createRef<PlasmicComponent>();
 
 	constructor() {
 		super();
@@ -83,6 +98,11 @@ export class SpaceScene extends LitElement {
 		this.controls = new DragControls([this.object], this.camera, this.renderer.domElement);
 		this.controls.addEventListener("drag", () => this.renderCanvas());
 
+		// Orbit Controls
+		this.orbitControls = new OrbitControls(this.camera, this.renderer.domElement);
+		this.orbitControls.addEventListener("change", () => this.renderCanvas());
+		this.orbitControls.enabled = false;
+
 		// Object select
 		onRealClick(this.renderer.domElement, event => this.onObjectClick(event));
 
@@ -92,6 +112,11 @@ export class SpaceScene extends LitElement {
 	private onObjectClick(event: MouseEvent): void {
 		const object = getObjectOnClick(this.renderer, this.scene, this.camera, event);
 		this.objectSelected = !!object;
+		if (!object) {
+			this.objectRotating = false;
+			this.orbitControls.enabled = false;
+			this.controls.activate();
+		}
 		this.renderCanvas();
 	}
 
@@ -99,16 +124,27 @@ export class SpaceScene extends LitElement {
 		if (this.selectionOutline) {
 			this.scene.remove(this.selectionOutline);
 			this.selectionFrame.value!.style.display = "none";
+			this.actionMenu.value!.style.display = "none";
 		}
 
+		const coords = getScreenCoordsAndSize(this.renderer, this.scene, this.camera, this.object);
+
 		if (this.objectSelected) {
+			// Outline
 			const edges = new Three.EdgesGeometry(this.object.geometry);
 			this.selectionOutline = new Three.LineSegments(edges, new Three.LineBasicMaterial({ color: 0x00A9F0 }));
 			this.selectionOutline.position.copy(this.object.position);
 			this.selectionOutline.rotation.copy(this.object.rotation);
 			this.scene.add(this.selectionOutline);
 
-			const coords = getScreenCoordsAndSize(this.renderer, this.scene, this.camera, this.object);
+			// Action menu
+			this.actionMenu.value!.style.left = `${coords.x + 472 + coords.width + 16}px`;
+			this.actionMenu.value!.style.top = `${coords.y + 90}px`;
+			this.actionMenu.value!.style.display = "block";
+		}
+
+		if (this.objectSelected && !this.objectRotating) {
+			// Selection frame
 			this.selectionFrame.value!.style.left = `${coords.x + 472}px`;
 			this.selectionFrame.value!.style.top = `${coords.y + 90}px`;
 			this.selectionFrame.value!.style.width = `${coords.width}px`;
@@ -119,6 +155,37 @@ export class SpaceScene extends LitElement {
 		this.renderer.render(this.scene, this.camera);
 	}
 
+	private bindActionMenu() {
+		const adjustmentsButton = this.actionMenu.value!.shadowRoot!.querySelector("div[class*=adjustments]") as HTMLElement;
+		const rotationButton = this.actionMenu.value!.shadowRoot!.querySelector("div[class*=rotation]") as HTMLElement;
+
+		adjustmentsButton?.addEventListener("click", () => console.log("Adjustments clicked"));
+		rotationButton?.addEventListener("click", () => {
+			this.objectRotating = true;
+			this.orbitControls.enabled = true;
+			this.controls.deactivate();
+			this.renderCanvas();
+		});
+
+		// Context variation
+
+		const doneButton = this.actionMenu.value!.shadowRoot!.querySelector("div[class*=done]") as HTMLElement;
+		const resetButton = this.actionMenu.value!.shadowRoot!.querySelector("div[class*=reset]") as HTMLElement;
+
+		doneButton.addEventListener("click", () => {
+			this.objectRotating = false;
+			this.orbitControls.enabled = false;
+			this.controls.activate();
+			this.renderCanvas();
+		});
+		resetButton.addEventListener("click", () => {
+			this.objectRotating = false;
+			this.orbitControls.enabled = false;
+			this.controls.activate();
+			this.renderCanvas();
+		});
+	}
+
 	static styles = [...componentStyles, css`
 		#selection-frame {
 			position: absolute;
@@ -126,6 +193,10 @@ export class SpaceScene extends LitElement {
 			width: 100px;
 			height: 100px;
 			border: 1px dashed #00A9F0;
+		}
+		
+		#action-menu {
+			position: absolute;
 		}
 	`];
 }
