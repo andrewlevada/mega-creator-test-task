@@ -18,10 +18,15 @@ export class SelectionFrame extends LitElement {
             `))}
             
             ${[...xAxis, ...yAxis].map((side) => html`
-            	<img class="el rotate ${side}" src=${rotateSymbol} alt="null"/>
+            	<img class="el rotate ${side}" src=${this.fixUrl(rotateSymbol)} alt="null"/>
             `)}
         `;
     }
+
+	private fixUrl(url: string): string {
+		// removing first directory
+		return url.replace(/\/[^/]+/, "");
+	}
 
     static styles = [...componentStyles, unsafeCSS(scopedStyles)];
 }

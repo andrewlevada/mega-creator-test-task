@@ -10,6 +10,8 @@ import { onRealClick } from "~utils/events";
 import { createRef, ref } from "lit/directives/ref.js";
 import { PlasmicComponent } from "lit-plasmic";
 
+import("~components/selection-frame").then(f => f.default());
+
 export default (): void => defineComponent("space-scene", SpaceScene);
 export class SpaceScene extends LitElement {
 	private scene!: Three.Scene;
@@ -30,7 +32,7 @@ export class SpaceScene extends LitElement {
 		return html`
 			${this.renderElement}
 			
-			<div ${ref(this.selectionFrame)} id="selection-frame"></div>
+			<selection-frame ${ref(this.selectionFrame)} id="selection-frame"></selection-frame>
 			<plasmic-component name="ActionMenu" projectId="8dw8cFpzDBK4cZFUBJNuWw"
 							   publicApiToken=${plasmicPublicApiToken} id="action-menu"
 							   componentProps=${this.objectRotating ? JSON.stringify({ type: "context" }) : ""}
@@ -190,9 +192,6 @@ export class SpaceScene extends LitElement {
 		#selection-frame {
 			position: absolute;
 			pointer-events: none;
-			width: 100px;
-			height: 100px;
-			border: 1px dashed #00A9F0;
 		}
 		
 		#action-menu {
