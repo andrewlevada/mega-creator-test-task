@@ -1,0 +1,19 @@
+.border {
+	margin: 4px;
+	border: 1px dashed #00A9F0;
+}
+
+.el {
+	position: absolute;
+
+	&.square {
+		width: 8px;
+		height: 8px;
+		border: 1px solid #00A9F0;
+	}
+
+	&.rotate {
+		width: 13px;
+		height: 11px;
+	}
+}

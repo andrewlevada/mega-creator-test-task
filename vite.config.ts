@@ -7,6 +7,7 @@ export default defineConfig({
 			"~components": "/src/components",
 			"~utils": "/src/utils",
 			"~styles": "/src/assets/styles",
+			"~graphics": "./src/assets/graphics",
 			"~src": "/src"
 		},
 	},

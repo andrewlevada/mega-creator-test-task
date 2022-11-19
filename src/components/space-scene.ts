@@ -1,11 +1,12 @@
 import { defineComponent } from "~utils/components";
-import { html, LitElement, TemplateResult } from "lit";
+import { css, html, LitElement, TemplateResult } from "lit";
 import { state } from "lit/decorators.js";
 import { componentStyles } from "~src/global";
 import * as Three from "three";
 import { DragControls } from "three/examples/jsm/controls/DragControls";
-import { getObjectOnClick } from "~utils/three-utils";
+import { getObjectOnClick, getScreenCoordsAndSize } from "~utils/three";
 import { onRealClick } from "~utils/events";
+import { createRef, ref } from "lit/directives/ref.js";
 
 export default (): void => defineComponent("space-scene", SpaceScene);
 export class SpaceScene extends LitElement {
@@ -14,12 +15,21 @@ export class SpaceScene extends LitElement {
 	private renderer!: Three.WebGLRenderer;
 	private controls!: DragControls;
 
+	private object!: Three.Mesh;
+	private selectionOutline!: Three.LineSegments;
+
+	private objectSelected: boolean = false;
+
 	@state() renderElement: HTMLElement | null = null;
 
-
 	render(): TemplateResult {
-		return html`${this.renderElement}`;
+		return html`
+			${this.renderElement}
+			<div ${ref(this.selectionFrame)} id="selection-frame"></div>
+		`;
 	}
+
+	private selectionFrame = createRef<HTMLElement>();
 
 	constructor() {
 		super();
@@ -61,16 +71,16 @@ export class SpaceScene extends LitElement {
 		this.scene.add(ambientLight);
 
 		// Object
-		const object = new Three.Mesh(
+		this.object = new Three.Mesh(
 			new Three.BoxGeometry(10, 10, 10),
 			new Three.MeshNormalMaterial()
 		);
-		object.position.set(0, 0, 0);
-		object.rotation.set(30, 90, 0);
-		this.scene.add(object);
+		this.object.position.set(0, 0, 0);
+		this.object.rotation.set(30, 90, 0);
+		this.scene.add(this.object);
 
 		// Drag Controls
-		this.controls = new DragControls([object], this.camera, this.renderer.domElement);
+		this.controls = new DragControls([this.object], this.camera, this.renderer.domElement);
 		this.controls.addEventListener("drag", () => this.renderCanvas());
 
 		// Object select
@@ -81,13 +91,41 @@ export class SpaceScene extends LitElement {
 
 	private onObjectClick(event: MouseEvent): void {
 		const object = getObjectOnClick(this.renderer, this.scene, this.camera, event);
-		if (!object) return;
-		console.log(object);
+		this.objectSelected = !!object;
+		this.renderCanvas();
 	}
 
 	private renderCanvas(): void {
+		if (this.selectionOutline) {
+			this.scene.remove(this.selectionOutline);
+			this.selectionFrame.value!.style.display = "none";
+		}
+
+		if (this.objectSelected) {
+			const edges = new Three.EdgesGeometry(this.object.geometry);
+			this.selectionOutline = new Three.LineSegments(edges, new Three.LineBasicMaterial({ color: 0x00A9F0 }));
+			this.selectionOutline.position.copy(this.object.position);
+			this.selectionOutline.rotation.copy(this.object.rotation);
+			this.scene.add(this.selectionOutline);
+
+			const coords = getScreenCoordsAndSize(this.renderer, this.scene, this.camera, this.object);
+			this.selectionFrame.value!.style.left = `${coords.x + 472}px`;
+			this.selectionFrame.value!.style.top = `${coords.y + 90}px`;
+			this.selectionFrame.value!.style.width = `${coords.width}px`;
+			this.selectionFrame.value!.style.height = `${coords.height}px`;
+			this.selectionFrame.value!.style.display = "block";
+		}
+
 		this.renderer.render(this.scene, this.camera);
 	}
 
-	static styles = [...componentStyles];
+	static styles = [...componentStyles, css`
+		#selection-frame {
+			position: absolute;
+			pointer-events: none;
+			width: 100px;
+			height: 100px;
+			border: 1px dashed #00A9F0;
+		}
+	`];
 }

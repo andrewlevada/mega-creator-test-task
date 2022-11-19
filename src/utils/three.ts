@@ -14,3 +14,17 @@ export function getObjectOnClick(renderer: Three.WebGLRenderer, scene: Three.Sce
 	if (intersects.length == 0) return null;
 	return  intersects[0].object;
 }
+
+export function getScreenCoordsAndSize(renderer: Three.WebGLRenderer, scene: Three.Scene, camera: Three.Camera, object: Three.Mesh): {x: number, y: number, width: number, height: number} {
+	const vector = new Three.Vector3();
+	vector.setFromMatrixPosition(object.matrixWorld);
+	vector.project(camera);
+
+	vector.x = (vector.x + 1) / 2 * renderer.domElement.clientWidth;
+	vector.y = -(vector.y - 1) / 2 * renderer.domElement.clientHeight;
+
+	const width = 120;
+	const height = 120;
+
+	return { x: vector.x - width / 2, y: vector.y - height / 2, width, height };
+}
