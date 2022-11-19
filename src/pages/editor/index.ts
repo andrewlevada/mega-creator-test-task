@@ -23,7 +23,6 @@ export class EditorPage extends LitElement {
 	private plasmicRef = createRef<PlasmicComponent>();
 
 	private onPlasmicLoaded() {
-		console.log("loaded");
 		const root = this.plasmicRef.value!.shadowRoot!;
 		const canvas = root.querySelector(`div[class*=EditorPage__canvas]`) as HTMLElement;
 		canvas.addEventListener("click", () => console.log("click!"));

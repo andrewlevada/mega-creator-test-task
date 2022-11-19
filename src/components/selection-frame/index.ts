@@ -7,6 +7,13 @@ import scopedStyles from "./styles.scss";
 const xAxis = ["left", "right"];
 const yAxis = ["top", "bottom"];
 
+export interface RotationArrowDragEvent extends CustomEvent {
+	  detail: {
+		  side: "top" | "bottom" | "left" | "right";
+		  event: DragEvent;
+	  }
+}
+
 export default (): void => defineComponent("selection-frame", SelectionFrame);
 export class SelectionFrame extends LitElement {
     render(): TemplateResult {
@@ -18,7 +25,8 @@ export class SelectionFrame extends LitElement {
             `))}
             
             ${[...xAxis, ...yAxis].map((side) => html`
-            	<img class="el rotate ${side}" src=${this.fixUrl(rotateSymbol)} alt="null"/>
+            	<img class="el rotate ${side}" src=${this.fixUrl(rotateSymbol)} alt="null"
+	                 @drag=${(event: DragEvent) => this.emitDragEvent(side, event)}/>
             `)}
         `;
     }
@@ -26,6 +34,15 @@ export class SelectionFrame extends LitElement {
 	private fixUrl(url: string): string {
 		// removing first directory
 		return url.replace(/\/[^/]+/, "");
+	}
+
+	private emitDragEvent(side: string, event: DragEvent): void {
+		this.dispatchEvent(new CustomEvent("rotation-drag", {
+			detail: {
+				side,
+				event
+			}
+		}) as RotationArrowDragEvent);
 	}
 
     static styles = [...componentStyles, unsafeCSS(scopedStyles)];
