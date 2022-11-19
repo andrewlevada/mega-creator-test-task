@@ -4,6 +4,8 @@ import { state } from "lit/decorators.js";
 import { componentStyles } from "~src/global";
 import * as Three from "three";
 import { DragControls } from "three/examples/jsm/controls/DragControls";
+import { getObjectOnClick } from "~utils/three-utils";
+import { onRealClick } from "~utils/events";
 
 export default (): void => defineComponent("space-scene", SpaceScene);
 export class SpaceScene extends LitElement {
@@ -71,7 +73,16 @@ export class SpaceScene extends LitElement {
 		this.controls = new DragControls([object], this.camera, this.renderer.domElement);
 		this.controls.addEventListener("drag", () => this.renderCanvas());
 
+		// Object select
+		onRealClick(this.renderer.domElement, event => this.onObjectClick(event));
+
 		this.renderCanvas();
+	}
+
+	private onObjectClick(event: MouseEvent): void {
+		const object = getObjectOnClick(this.renderer, this.scene, this.camera, event);
+		if (!object) return;
+		console.log(object);
 	}
 
 	private renderCanvas(): void {
