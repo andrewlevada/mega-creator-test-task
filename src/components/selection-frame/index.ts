@@ -9,7 +9,7 @@ const yAxis = ["top", "bottom"];
 
 export interface RotationArrowDragEvent extends CustomEvent {
 	  detail: {
-		  side: "top" | "bottom" | "left" | "right";
+		  side: "top" | "bottom" | "left" | "right" | "all";
 		  event: DragEvent;
 	  }
 }
