@@ -1,4 +1,4 @@
-import{_ as je}from"./index.c732c29f.js";/**
+import{_ as je}from"./index.13573bac.js";/**
  * @license
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
@@ -62,7 +62,7 @@ import{_ as je}from"./index.c732c29f.js";/**
  * @license
  * Copyright 2022 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */je(()=>import("./space-scene.32fb27ab.js"),["assets/space-scene.32fb27ab.js","assets/index.c732c29f.js"]).then(l=>l.default());const $i=()=>ui("app-page--editor",Rt);class Rt extends st{constructor(){super(...arguments),this.plasmicRef=ri()}render(){return Ve`
+ */je(()=>import("./space-scene.a3dcbe0a.js"),["assets/space-scene.a3dcbe0a.js","assets/index.13573bac.js"]).then(l=>l.default());const $i=()=>ui("app-page--editor",Rt);class Rt extends st{constructor(){super(...arguments),this.plasmicRef=ri()}render(){return Ve`
 			<plasmic-component name="EditorPage" projectId="8dw8cFpzDBK4cZFUBJNuWw"
 							   publicApiToken=${ci}
 							   @loaded=${this.onPlasmicLoaded} ${ai(this.plasmicRef)}></plasmic-component>
