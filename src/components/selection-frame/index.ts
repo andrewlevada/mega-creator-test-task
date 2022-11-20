@@ -1,7 +1,6 @@
 import { defineComponent } from "~utils/components";
 import { html, LitElement, TemplateResult, unsafeCSS } from "lit";
 import { componentStyles } from "~src/global";
-import rotateSymbol from "~graphics/rotate-symbol.png";
 import scopedStyles from "./styles.scss";
 
 const xAxis = ["left", "right"];
@@ -25,7 +24,7 @@ export class SelectionFrame extends LitElement {
             `))}
             
             ${[...xAxis, ...yAxis].map((side) => html`
-            	<img class="el rotate ${side}" src=${this.fixUrl(rotateSymbol)} alt="null"
+            	<img class="el rotate ${side}" src="rotate-symbol.png" alt="null"
 	                 @drag=${(event: DragEvent) => this.emitDragEvent(side, event)}/>
             `)}
         `;
