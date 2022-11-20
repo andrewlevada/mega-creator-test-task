@@ -115,6 +115,15 @@ export class SpaceScene extends LitElement {
 			this.renderCanvas();
 		});
 
+		loader.load("mug.obj", (group: Three.Group) => {
+			const object = group.children[1] as Three.Mesh;
+			object.position.set(0, -25, 0);
+			object.rotation.set(170, 90, 0);
+			object.scale.set(3, 3, 3);
+			object.material = new Three.MeshNormalMaterial();
+			this.scene.add(group);
+		});
+
 		// Object select
 		onRealClick(this.renderer.domElement, event => this.onObjectClick(event));
 
