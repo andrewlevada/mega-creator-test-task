@@ -3,7 +3,7 @@ npm run build
 rm -rf ../build-dist
 cp -R ./build/. ../build-dist/
 
-git checkout dist
+git checkout deploy
 rm -rf ./assets
 rm -rf ./static
 cp -R ../build-dist/. ./
