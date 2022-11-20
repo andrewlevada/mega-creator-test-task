@@ -12,7 +12,7 @@ export function getObjectOnClick(renderer: Three.WebGLRenderer, scene: Three.Sce
 
 	const intersects = raycaster.intersectObjects(scene.children);
 	if (intersects.length == 0) return null;
-	return  intersects[0].object;
+	return intersects[0].object;
 }
 
 export function getScreenCoordsAndSize(renderer: Three.WebGLRenderer, scene: Three.Scene, camera: Three.Camera, object: Three.Mesh): {x: number, y: number, width: number, height: number} {
@@ -20,11 +20,24 @@ export function getScreenCoordsAndSize(renderer: Three.WebGLRenderer, scene: Thr
 	vector.setFromMatrixPosition(object.matrixWorld);
 	vector.project(camera);
 
-	vector.x = (vector.x + 1) / 2 * renderer.domElement.clientWidth;
-	vector.y = -(vector.y - 1) / 2 * renderer.domElement.clientHeight;
+	const width = 220;
+	const height = 160;
+	const hardcodedOffsetX = 30;
+	const hardcodedOffsetY = -60;
 
-	const width = 120;
-	const height = 120;
+	vector.x = (vector.x + 1) / 2 * renderer.domElement.clientWidth - width / 2 + hardcodedOffsetX;
+	vector.y = -(vector.y - 1) / 2 * renderer.domElement.clientHeight - height / 2 + hardcodedOffsetY;
 
-	return { x: vector.x - width / 2, y: vector.y - height / 2, width, height };
+	return { x: vector.x, y: vector.y, width, height };
+}
+
+export function getGeometriesFromGroup(group: Three.Group): Three.BufferGeometry[] {
+	const geometries: Three.BufferGeometry[] = [];
+
+	group.traverse((child) => {
+		if (child instanceof Three.Mesh)
+			geometries.push(child.geometry);
+	});
+
+	return geometries;
 }

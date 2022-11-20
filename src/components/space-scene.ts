@@ -4,6 +4,7 @@ import { state } from "lit/decorators.js";
 import { componentStyles, plasmicPublicApiToken } from "~src/global";
 import * as Three from "three";
 import { DragControls } from "three/examples/jsm/controls/DragControls";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 import { getObjectOnClick, getScreenCoordsAndSize } from "~utils/three";
 import { onRealClick } from "~utils/events";
 import { createRef, ref } from "lit/directives/ref.js";
@@ -19,7 +20,8 @@ export class SpaceScene extends LitElement {
 	private renderer!: Three.WebGLRenderer;
 	private controls!: DragControls;
 
-	private object!: Three.Mesh;
+	private object!: Three.Group;
+	private primaryMesh!: Three.Mesh;
 	private selectionOutline!: Three.LineSegments;
 	private hideControls: boolean = false;
 
@@ -90,17 +92,28 @@ export class SpaceScene extends LitElement {
 		this.scene.add(ambientLight);
 
 		// Object
-		this.object = new Three.Mesh(
-			new Three.BoxGeometry(10, 10, 10),
-			new Three.MeshNormalMaterial()
-		);
-		this.object.position.set(0, 0, 0);
-		this.object.rotation.set(30, 90, 0);
-		this.scene.add(this.object);
+		const loader = new OBJLoader();
+		loader.load("sample.obj", (object: Three.Group) => {
+			this.object = object;
+			this.object.position.set(0, 0, 0);
+			this.object.rotation.set(0, 0, 0);
 
-		// Drag Controls
-		this.controls = new DragControls([this.object], this.camera, this.renderer.domElement);
-		this.controls.addEventListener("drag", () => this.renderCanvas());
+			this.primaryMesh = object.children[0] as Three.Mesh;
+			this.primaryMesh.position.set(0, 0, 0);
+			this.primaryMesh.rotation.set(-90, 0, 30);
+			this.primaryMesh.scale.set(3, 3, 3);
+			this.primaryMesh.material = new Three.MeshNormalMaterial();
+
+			this.scene.add(this.object);
+
+			console.log("Placed object!");
+
+			// Drag Controls
+			this.controls = new DragControls([this.object], this.camera, this.renderer.domElement);
+			this.controls.addEventListener("drag", () => this.renderCanvas());
+
+			this.renderCanvas();
+		});
 
 		// Object select
 		onRealClick(this.renderer.domElement, event => this.onObjectClick(event));
@@ -156,10 +169,10 @@ export class SpaceScene extends LitElement {
 		console.log(deltaX, deltaY);
 
 		if (event.detail.side === "left" || event.detail.side === "right" || event.detail.side === "all")
-			this.object.rotateOnWorldAxis(new Three.Vector3(0, 1, 0), deltaX / 100);
+			this.primaryMesh.rotateOnWorldAxis(new Three.Vector3(0, 1, 0), deltaX / 100);
 
 		if (event.detail.side === "top" || event.detail.side === "bottom" || event.detail.side === "all")
-			this.object.rotateOnWorldAxis(new Three.Vector3(0, 0, 1), -deltaY / 100);
+			this.primaryMesh.rotateOnWorldAxis(new Three.Vector3(0, 0, 1), -deltaY / 100);
 
 		this.rotationArrowLastX = event.detail.event.clientX;
 		this.rotationArrowLastY = event.detail.event.clientY;
@@ -167,23 +180,27 @@ export class SpaceScene extends LitElement {
 		this.renderCanvas();
 	}
 
+	private lastRenderTime = 0;
 	private renderCanvas(): void {
-		if (this.selectionOutline) {
-			this.scene.remove(this.selectionOutline);
-			this.selectionFrame.value!.style.opacity = "0";
-			this.selectionFrame.value!.style.pointerEvents = "none";
-			this.actionMenu.value!.style.display = "none";
-		}
+		if (!this.object) return;
+		// if (this.lastRenderTime + 1000 / 30 > Date.now()) return;
+		this.lastRenderTime = Date.now();
 
-		const coords = getScreenCoordsAndSize(this.renderer, this.scene, this.camera, this.object);
+		// Reset state
+		if (this.selectionOutline) this.scene.remove(this.selectionOutline);
+		this.selectionFrame.value!.style.opacity = "0";
+		this.selectionFrame.value!.style.pointerEvents = "none";
+		this.actionMenu.value!.style.display = "none";
+
+		const coords = getScreenCoordsAndSize(this.renderer, this.scene, this.camera, this.object.children[0] as Three.Mesh);
 
 		if (this.objectSelected) {
 			// Outline
-			const edges = new Three.EdgesGeometry(this.object.geometry);
-			this.selectionOutline = new Three.LineSegments(edges, new Three.LineBasicMaterial({ color: 0x00A9F0 }));
-			this.selectionOutline.position.copy(this.object.position);
-			this.selectionOutline.rotation.copy(this.object.rotation);
-			this.scene.add(this.selectionOutline);
+			// const edges = new Three.EdgesGeometry(this.primaryMesh.geometry);
+			// this.selectionOutline = new Three.LineSegments(edges, new Three.LineBasicMaterial({ color: 0x00A9F0 }));
+			// this.selectionOutline.position.copy(this.primaryMesh.position);
+			// this.selectionOutline.rotation.copy(this.primaryMesh.rotation);
+			// this.scene.add(this.selectionOutline);
 
 			if (!this.hideControls) {
 				// Action menu
